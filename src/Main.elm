@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, div, text)
+import Html exposing (..)
 
 
 main =
@@ -13,12 +13,18 @@ main =
 
 
 type alias Model =
-    String
+    { gameState : GameState }
+
+
+type GameState
+    = Ready
+    | Playing
+    | GameOver
 
 
 init : Model
 init =
-    "てんぷら🍤"
+    { gameState = Ready }
 
 
 
@@ -42,5 +48,30 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ text model ]
+    case model.gameState of
+        Ready ->
+            div []
+                [ showReady model ]
+
+        Playing ->
+            div []
+                [ showPlaying model ]
+
+        GameOver ->
+            div []
+                [ showGameOver model ]
+
+
+showReady : Model -> Html Msg
+showReady model =
+    h1 [] [ text "サラダコインあんぱんゴルディアスの結び目ゲーム" ]
+
+
+showPlaying : Model -> Html Msg
+showPlaying model =
+    h1 [] [ text "playing page" ]
+
+
+showGameOver : Model -> Html Msg
+showGameOver model =
+    h1 [] [ text "gameover page!" ]
