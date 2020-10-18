@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (..)
+import Html.Attributes as Attr
 
 
 main =
@@ -24,7 +25,7 @@ type GameState
 
 init : Model
 init =
-    { gameState = Ready }
+    { gameState = Playing }
 
 
 
@@ -54,8 +55,39 @@ view model =
                 [ showReady model ]
 
         Playing ->
-            div []
-                [ showPlaying model ]
+            div [ Attr.style "display" "flex"
+                , Attr.style "height" "100%"
+                ]
+                [ div
+                    [ Attr.style "background-color" "skyblue"
+                    , Attr.style "width" "70%"
+                    ]
+                    [ text "left view"
+                    , div
+                        [ Attr.style "position" "absolute"
+                        , Attr.style "top" "100px"
+                        , Attr.style "left" "100px"
+                        , Attr.style "border" "1px solid"
+                        , Attr.style "width" "50%"
+                        , Attr.style "height" "40%"
+                        ]
+                        [ text "ここにタイトルが出る想定"]
+                    , div
+                        [ Attr.style "position" "absolute"
+                        , Attr.style "top" "800px"
+                        , Attr.style "left" "100px"
+                        , Attr.style "border" "1px solid"
+                        , Attr.style "width" "50%"
+                        , Attr.style "height" "20%"
+                        ]
+                        [ text "ここは操作ゾーンの想定" ]
+                    ]
+                , div
+                    [ Attr.style "background-color" "green"
+                    , Attr.style "width" "30%"
+                    ]
+                    [ text "right view" ]
+                ]
 
         GameOver ->
             div []
