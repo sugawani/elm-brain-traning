@@ -61,6 +61,7 @@ view model =
                 [ div
                     [ Attr.style "background-color" "skyblue"
                     , Attr.style "width" "70%"
+                    , Attr.id "playView"
                     ]
                     [ text "left view"
                     , div
@@ -85,6 +86,7 @@ view model =
                 , div
                     [ Attr.style "background-color" "green"
                     , Attr.style "width" "30%"
+                    , Attr.id "playView"
                     ]
                     [ text "right view" ]
                 ]
