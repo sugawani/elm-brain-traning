@@ -6,7 +6,8 @@
   "author": "sugawani",
   "license": "MIT",
   "dependencies": {
-    "elm-test": "^0.19.1-revision4"
+    "elm-test": "^0.19.1-revision4",
+    "parcel-plugin-asset-copier": "^1.1.0"
   },
   "scripts": {
     "dev": "parcel ./src/index.html",
@@ -17,5 +18,6 @@
     "elm-hot": "^1.1.5",
     "node-elm-compiler": "^5.0.5",
     "parcel-bundler": "^1.12.4"
-  }
+  },
+  "assetsPath": "assets"
 }
