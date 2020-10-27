@@ -6,7 +6,12 @@ import Html.Attributes as Attr
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.element
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        }
 
 
 
@@ -23,9 +28,9 @@ type GameState
     | GameOver
 
 
-init : Model
-init =
-    { gameState = Playing }
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { gameState = Playing }, Cmd.none )
 
 
 
@@ -36,11 +41,11 @@ type Msg
     = None
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         None ->
-            model
+            ( model, Cmd.none )
 
 
 
@@ -55,7 +60,8 @@ view model =
                 [ showReady model ]
 
         Playing ->
-            div [ Attr.style "display" "flex"
+            div
+                [ Attr.style "display" "flex"
                 , Attr.style "height" "100%"
                 ]
                 [ div
@@ -72,7 +78,7 @@ view model =
                         , Attr.style "width" "50%"
                         , Attr.style "height" "40%"
                         ]
-                        [ text "ここにタイトルが出る想定"]
+                        [ text "ここにタイトルが出る想定" ]
                     , div
                         [ Attr.style "position" "absolute"
                         , Attr.style "top" "800px"
@@ -109,3 +115,12 @@ showPlaying model =
 showGameOver : Model -> Html Msg
 showGameOver model =
     h1 [] [ text "gameover page!" ]
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
