@@ -3,6 +3,8 @@ module Main exposing (..)
 import Browser
 import Html exposing (..)
 import Html.Attributes as Attr
+import Random
+import Time
 
 
 main =
@@ -18,8 +20,17 @@ main =
 -- MODEL
 
 
+type alias Question =
+    { index : Int
+    , imgSrc : String
+    }
+
+
 type alias Model =
-    { gameState : GameState }
+    { gameState : GameState
+    , randomValue : Int
+    , questions : List Question
+    }
 
 
 type GameState
@@ -30,7 +41,17 @@ type GameState
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { gameState = Playing }, Cmd.none )
+    ( { gameState = Playing
+      , randomValue = 0
+      , questions =
+            [ { index = 0, imgSrc = "salad.jpg" }
+            , { index = 1, imgSrc = "coin.jpg" }
+            , { index = 2, imgSrc = "gordian_knot.jpg" }
+            , { index = 3, imgSrc = "anpan.jpg" }
+            ]
+      }
+    , Cmd.none
+    )
 
 
 
@@ -38,14 +59,18 @@ init _ =
 
 
 type Msg
-    = None
+    = GenRandom Time.Posix
+    | SetRandomValue Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        None ->
-            ( model, Cmd.none )
+        GenRandom _ ->
+            ( model, Random.generate SetRandomValue (Random.int 0 3) )
+
+        SetRandomValue randomVal ->
+            ( { model | randomValue = randomVal }, Cmd.none )
 
 
 
@@ -78,7 +103,13 @@ view model =
                         , Attr.style "width" "50%"
                         , Attr.style "height" "40%"
                         ]
-                        [ text "ここにタイトルが出る想定" ]
+                        [ img
+                            [ Attr.src <| getImgSrc model
+                            , Attr.style "width" "100%"
+                            , Attr.style "height" "100%"
+                            , Attr.style "object-fit" "fill"
+                            ] []
+                        ]
                     , div
                         [ Attr.style "position" "absolute"
                         , Attr.style "top" "800px"
@@ -116,11 +147,17 @@ showGameOver : Model -> Html Msg
 showGameOver model =
     h1 [] [ text "gameover page!" ]
 
-
+getImgSrc : Model -> String
+getImgSrc model =
+    model.questions
+        |> List.filter (\question -> question.index == model.randomValue)
+        |> List.head
+        |> Maybe.andThen (\q -> Just(q.imgSrc))
+        |> Maybe.withDefault "gordian_knot.jpg"
 
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Time.every 1000 GenRandom
