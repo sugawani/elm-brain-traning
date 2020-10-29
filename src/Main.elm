@@ -1,10 +1,11 @@
 module Main exposing (..)
 
 import Browser
+import Browser.Events
 import Html exposing (..)
 import Html.Attributes as Attr
+import Json.Decode as D exposing (Decoder)
 import Random
-import Time
 
 
 main =
@@ -59,15 +60,37 @@ init _ =
 
 
 type Msg
-    = GenRandom Time.Posix
+    = KeyDown KeyType
     | SetRandomValue Int
+
+
+type KeyType
+    = Up
+    | Down
+    | Left
+    | Right
+    | Other
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GenRandom _ ->
-            ( model, Random.generate SetRandomValue (Random.int 0 3) )
+        KeyDown keyType ->
+            case keyType of
+                Up ->
+                    ( model, Random.generate SetRandomValue (Random.int 0 3) )
+
+                Down ->
+                    ( model, Random.generate SetRandomValue (Random.int 0 3) )
+
+                Left ->
+                    ( model, Random.generate SetRandomValue (Random.int 0 3) )
+
+                Right ->
+                    ( model, Random.generate SetRandomValue (Random.int 0 3) )
+
+                Other ->
+                    ( model, Cmd.none )
 
         SetRandomValue randomVal ->
             ( { model | randomValue = randomVal }, Cmd.none )
@@ -108,7 +131,8 @@ view model =
                             , Attr.style "width" "100%"
                             , Attr.style "height" "100%"
                             , Attr.style "object-fit" "fill"
-                            ] []
+                            ]
+                            []
                         ]
                     , div
                         [ Attr.style "position" "absolute"
@@ -147,17 +171,44 @@ showGameOver : Model -> Html Msg
 showGameOver model =
     h1 [] [ text "gameover page!" ]
 
+
 getImgSrc : Model -> String
 getImgSrc model =
     model.questions
         |> List.filter (\question -> question.index == model.randomValue)
         |> List.head
-        |> Maybe.andThen (\q -> Just(q.imgSrc))
+        |> Maybe.andThen (\q -> Just q.imgSrc)
         |> Maybe.withDefault "gordian_knot.jpg"
+
+
 
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every 1000 GenRandom
+    Browser.Events.onKeyDown (D.map KeyDown keyDecoder)
+
+
+keyDecoder : Decoder KeyType
+keyDecoder =
+    D.map toKey (D.field "key" D.string)
+
+
+toKey : String -> KeyType
+toKey key =
+    case key of
+        "ArrowUp" ->
+            Up
+
+        "ArrowDown" ->
+            Down
+
+        "ArrowLeft" ->
+            Left
+
+        "ArrowRight" ->
+            Right
+
+        _ ->
+            Other
