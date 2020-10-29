@@ -5,7 +5,8 @@ import Browser.Events
 import Html exposing (..)
 import Html.Attributes as Attr
 import Json.Decode as D exposing (Decoder)
-import Random
+import Random exposing (float)
+import Time
 
 
 main =
@@ -33,6 +34,7 @@ type alias Model =
     , questionIndex : Int
     , questions : List Question
     , correntAnswerCount : Int
+    , currentTime : Int
     }
 
 
@@ -53,6 +55,7 @@ init _ =
             , { index = 3, imgSrc = "anpan.jpg", arrow = "right" }
             ]
       , correntAnswerCount = 0
+      , currentTime = 0
       }
     , nextQuestion ()
     )
@@ -65,6 +68,7 @@ init _ =
 type Msg
     = KeyDown KeyType
     | SetQuestionIndex Int
+    | Tick Time.Posix
 
 
 type KeyType
@@ -100,28 +104,28 @@ update msg model =
                                     ( { model | correntAnswerCount = model.correntAnswerCount + 1 }, nextQuestion () )
 
                                 else
-                                    ( model, Cmd.none )
+                                    ( { model | currentTime = model.currentTime + 5 }, Cmd.none )
 
                             Down ->
                                 if correctAnswer "down" model then
                                     ( { model | correntAnswerCount = model.correntAnswerCount + 1 }, nextQuestion () )
 
                                 else
-                                    ( model, Cmd.none )
+                                    ( { model | currentTime = model.currentTime + 5 }, Cmd.none )
 
                             Left ->
                                 if correctAnswer "left" model then
                                     ( { model | correntAnswerCount = model.correntAnswerCount + 1 }, nextQuestion () )
 
                                 else
-                                    ( model, Cmd.none )
+                                    ( { model | currentTime = model.currentTime + 5 }, Cmd.none )
 
                             Right ->
                                 if correctAnswer "right" model then
                                     ( { model | correntAnswerCount = model.correntAnswerCount + 1 }, nextQuestion () )
 
                                 else
-                                    ( model, Cmd.none )
+                                    ( { model | currentTime = model.currentTime + 5 }, Cmd.none )
 
                             _ ->
                                 ( model, Cmd.none )
@@ -140,6 +144,9 @@ update msg model =
 
             else
                 ( model, nextQuestion () )
+
+        Tick t ->
+            ( { model | currentTime = model.currentTime + 1 }, Cmd.none )
 
 
 correctAnswer : String -> Model -> Bool
@@ -194,7 +201,6 @@ showReady model =
         ]
         [ img
             [ Attr.src "title.jpg"
-            , Attr.style "text-align" "center"
             ]
             []
         , h1 [] [ text "画面に表示されている写真がなにか当てるゲーム" ]
@@ -235,11 +241,11 @@ showPlaying model =
                 [ Attr.style "position" "absolute"
                 , Attr.style "top" "800px"
                 , Attr.style "left" "100px"
-                , Attr.style "border" "1px solid"
                 , Attr.style "width" "50%"
                 , Attr.style "height" "30%"
                 ]
-                [ img
+                [ text "間違ったキーを押すと経過時間+5秒!"
+                , img
                     [ Attr.src "sousa.jpg"
                     , Attr.style "width" "100%"
                     , Attr.style "height" "100%"
@@ -254,6 +260,7 @@ showPlaying model =
             , Attr.id "playView"
             ]
             [ h1 [] [ text "経過時間" ]
+            , h1 [] [ text <| String.fromInt model.currentTime ]
             , br [] []
             , h1 [] [ text "現在の正解数" ]
             , h1 [] [ text <| String.fromInt model.correntAnswerCount ++ "/10" ]
@@ -270,7 +277,28 @@ showPlaying model =
 
 showGameOver : Model -> Html Msg
 showGameOver model =
-    h1 [] [ text "gameover page!" ]
+    div
+        [ Attr.style "display" "flex"
+        , Attr.style "flex-direction" "column"
+        , Attr.style "justify-content" "center"
+        , Attr.style "align-items" "center"
+        ]
+        [ img [ Attr.src "result.jpg" ] []
+        , h1 [] [ text "ゲームクリア！" ]
+        , h1 [] [ text <| getResultTime model ]
+        , h1 [] [ text "Enterキーでスタート画面に戻ります" ]
+        , audio
+            [ Attr.src "result.mp3"
+            , Attr.type_ "audio/mp3"
+            , Attr.autoplay True
+            ]
+            []
+        ]
+
+
+getResultTime : Model -> String
+getResultTime model =
+    "あなたの記録は" ++ String.fromInt model.currentTime ++ "秒です！"
 
 
 getImgSrc : Model -> String
@@ -288,7 +316,18 @@ getImgSrc model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Browser.Events.onKeyDown (D.map KeyDown keyDecoder)
+    case model.gameState of
+        Ready ->
+            Browser.Events.onKeyDown (D.map KeyDown keyDecoder)
+
+        Playing ->
+            Sub.batch
+                [ Browser.Events.onKeyDown (D.map KeyDown keyDecoder)
+                , Time.every 1000 Tick
+                ]
+
+        GameOver ->
+            Browser.Events.onKeyDown (D.map KeyDown keyDecoder)
 
 
 keyDecoder : Decoder KeyType
