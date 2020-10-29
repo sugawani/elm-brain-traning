@@ -90,7 +90,7 @@ update msg model =
                             ( model, Cmd.none )
 
                 Playing ->
-                    if model.correntAnswerCount == 10 then
+                    if model.correntAnswerCount == 9 then
                         ( { model | gameState = GameOver }, Cmd.none )
 
                     else
@@ -123,16 +123,13 @@ update msg model =
                                 else
                                     ( model, Cmd.none )
 
-                            Enter ->
-                                ( { model | gameState = GameOver }, Cmd.none )
-
                             _ ->
                                 ( model, Cmd.none )
 
                 GameOver ->
                     case keyType of
                         Enter ->
-                            ( { model | gameState = Ready }, Cmd.none )
+                            init ()
 
                         _ ->
                             ( model, Cmd.none )
@@ -201,6 +198,7 @@ showReady model =
             ]
             []
         , h1 [] [ text "画面に表示されている写真がなにか当てるゲーム" ]
+        , h1 [] [ text "正解だと思う矢印キーを押してね" ]
         , h1 [] [ text "Chromeの人はサイトの設定から音楽を有効にすると音楽が流れるよ！" ]
         , h1 [] [ text "Enterキーを押してスタート！" ]
         ]
@@ -239,7 +237,7 @@ showPlaying model =
                 , Attr.style "left" "100px"
                 , Attr.style "border" "1px solid"
                 , Attr.style "width" "50%"
-                , Attr.style "height" "20%"
+                , Attr.style "height" "30%"
                 ]
                 [ img
                     [ Attr.src "sousa.jpg"
@@ -255,7 +253,11 @@ showPlaying model =
             , Attr.style "width" "30%"
             , Attr.id "playView"
             ]
-            [ text "right view" ]
+            [ h1 [] [ text "経過時間" ]
+            , br [] []
+            , h1 [] [ text "現在の正解数" ]
+            , h1 [] [ text <| String.fromInt model.correntAnswerCount ++ "/10" ]
+            ]
         , audio
             [ Attr.src "nando_loop.mp3"
             , Attr.type_ "audio/mp3"
