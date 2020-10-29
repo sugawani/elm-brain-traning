@@ -130,55 +130,7 @@ view model =
                 [ showReady model ]
 
         Playing ->
-            div
-                [ Attr.style "display" "flex"
-                , Attr.style "height" "100%"
-                ]
-                [ div
-                    [ Attr.style "background-color" "skyblue"
-                    , Attr.style "width" "70%"
-                    , Attr.id "playView"
-                    ]
-                    [ div
-                        [ Attr.style "position" "absolute"
-                        , Attr.style "top" "100px"
-                        , Attr.style "left" "100px"
-                        , Attr.style "border" "1px solid"
-                        , Attr.style "width" "50%"
-                        , Attr.style "height" "40%"
-                        ]
-                        [ img
-                            [ Attr.src <| getImgSrc model
-                            , Attr.style "width" "100%"
-                            , Attr.style "height" "100%"
-                            , Attr.style "object-fit" "fill"
-                            ]
-                            []
-                        ]
-                    , div
-                        [ Attr.style "position" "absolute"
-                        , Attr.style "top" "800px"
-                        , Attr.style "left" "100px"
-                        , Attr.style "border" "1px solid"
-                        , Attr.style "width" "50%"
-                        , Attr.style "height" "20%"
-                        ]
-                        [ text "ここは操作ゾーンの想定" ]
-                    ]
-                , div
-                    [ Attr.style "background-color" "green"
-                    , Attr.style "width" "30%"
-                    , Attr.id "playView"
-                    ]
-                    [ text "right view" ]
-                , audio
-                    [ Attr.src "nando_loop.mp3"
-                    , Attr.type_ "audio/mp3"
-                    , Attr.autoplay True
-                    , Attr.loop True
-                    ]
-                    []
-                ]
+            showPlaying model
 
         GameOver ->
             div []
@@ -206,7 +158,55 @@ showReady model =
 
 showPlaying : Model -> Html Msg
 showPlaying model =
-    h1 [] [ text "playing page" ]
+    div
+        [ Attr.style "display" "flex"
+        , Attr.style "height" "100%"
+        ]
+        [ div
+            [ Attr.style "background-color" "skyblue"
+            , Attr.style "width" "70%"
+            , Attr.id "playView"
+            ]
+            [ div
+                [ Attr.style "position" "absolute"
+                , Attr.style "top" "100px"
+                , Attr.style "left" "100px"
+                , Attr.style "border" "1px solid"
+                , Attr.style "width" "50%"
+                , Attr.style "height" "40%"
+                ]
+                [ img
+                    [ Attr.src <| getImgSrc model
+                    , Attr.style "width" "100%"
+                    , Attr.style "height" "100%"
+                    , Attr.style "object-fit" "fill"
+                    ]
+                    []
+                ]
+            , div
+                [ Attr.style "position" "absolute"
+                , Attr.style "top" "800px"
+                , Attr.style "left" "100px"
+                , Attr.style "border" "1px solid"
+                , Attr.style "width" "50%"
+                , Attr.style "height" "20%"
+                ]
+                [ text "ここは操作ゾーンの想定" ]
+            ]
+        , div
+            [ Attr.style "background-color" "green"
+            , Attr.style "width" "30%"
+            , Attr.id "playView"
+            ]
+            [ text "right view" ]
+        , audio
+            [ Attr.src "nando_loop.mp3"
+            , Attr.type_ "audio/mp3"
+            , Attr.autoplay True
+            , Attr.loop True
+            ]
+            []
+        ]
 
 
 showGameOver : Model -> Html Msg
