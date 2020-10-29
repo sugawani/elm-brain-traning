@@ -42,7 +42,7 @@ type GameState
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { gameState = Playing
+    ( { gameState = Ready
       , randomValue = 0
       , questions =
             [ { index = 0, imgSrc = "salad.jpg" }
@@ -69,6 +69,7 @@ type KeyType
     | Down
     | Left
     | Right
+    | Enter
     | Other
 
 
@@ -76,21 +77,42 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         KeyDown keyType ->
-            case keyType of
-                Up ->
-                    ( model, Random.generate SetRandomValue (Random.int 0 3) )
+            case model.gameState of
+                Ready ->
+                    case keyType of
+                        Enter ->
+                            ( { model | gameState = Playing }, Cmd.none )
 
-                Down ->
-                    ( model, Random.generate SetRandomValue (Random.int 0 3) )
+                        _ ->
+                            ( model, Cmd.none )
 
-                Left ->
-                    ( model, Random.generate SetRandomValue (Random.int 0 3) )
+                Playing ->
+                    case keyType of
+                        Up ->
+                            ( model, Random.generate SetRandomValue (Random.int 0 3) )
 
-                Right ->
-                    ( model, Random.generate SetRandomValue (Random.int 0 3) )
+                        Down ->
+                            ( model, Random.generate SetRandomValue (Random.int 0 3) )
 
-                Other ->
-                    ( model, Cmd.none )
+                        Left ->
+                            ( model, Random.generate SetRandomValue (Random.int 0 3) )
+
+                        Right ->
+                            ( model, Random.generate SetRandomValue (Random.int 0 3) )
+
+                        Enter ->
+                            ( { model | gameState = GameOver }, Cmd.none )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+                GameOver ->
+                    case keyType of
+                        Enter ->
+                            ( { model | gameState = Ready }, Cmd.none )
+
+                        _ ->
+                            ( model, Cmd.none )
 
         SetRandomValue randomVal ->
             ( { model | randomValue = randomVal }, Cmd.none )
@@ -117,8 +139,7 @@ view model =
                     , Attr.style "width" "70%"
                     , Attr.id "playView"
                     ]
-                    [ text "left view"
-                    , div
+                    [ div
                         [ Attr.style "position" "absolute"
                         , Attr.style "top" "100px"
                         , Attr.style "left" "100px"
@@ -150,6 +171,13 @@ view model =
                     , Attr.id "playView"
                     ]
                     [ text "right view" ]
+                , audio
+                    [ Attr.src "nando_loop.mp3"
+                    , Attr.type_ "audio/mp3"
+                    , Attr.autoplay True
+                    , Attr.loop True
+                    ]
+                    []
                 ]
 
         GameOver ->
@@ -159,7 +187,21 @@ view model =
 
 showReady : Model -> Html Msg
 showReady model =
-    h1 [] [ text "サラダコインあんぱんゴルディアスの結び目ゲーム" ]
+    div
+        [ Attr.style "display" "flex"
+        , Attr.style "flex-direction" "column"
+        , Attr.style "justify-content" "center"
+        , Attr.style "align-items" "center"
+        ]
+        [ img
+            [ Attr.src "title.jpg"
+            , Attr.style "text-align" "center"
+            ]
+            []
+        , h1 [] [ text "画面に表示されている写真がなにか当てるゲーム" ]
+        , h1 [] [ text "Chromeの人はサイトの設定から音楽を有効にすると音楽が流れるよ！" ]
+        , h1 [] [ text "Enterキーを押してスタート！" ]
+        ]
 
 
 showPlaying : Model -> Html Msg
@@ -209,6 +251,9 @@ toKey key =
 
         "ArrowRight" ->
             Right
+
+        "Enter" ->
+            Enter
 
         _ ->
             Other
