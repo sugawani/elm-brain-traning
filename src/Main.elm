@@ -24,13 +24,15 @@ main =
 type alias Question =
     { index : Int
     , imgSrc : String
+    , arrow : String
     }
 
 
 type alias Model =
     { gameState : GameState
-    , randomValue : Int
+    , questionIndex : Int
     , questions : List Question
+    , correntAnswerCount : Int
     }
 
 
@@ -43,15 +45,16 @@ type GameState
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { gameState = Ready
-      , randomValue = 0
+      , questionIndex = 0
       , questions =
-            [ { index = 0, imgSrc = "salad.jpg" }
-            , { index = 1, imgSrc = "coin.jpg" }
-            , { index = 2, imgSrc = "gordian_knot.jpg" }
-            , { index = 3, imgSrc = "anpan.jpg" }
+            [ { index = 0, imgSrc = "salad.jpg", arrow = "up" }
+            , { index = 1, imgSrc = "coin.jpg", arrow = "left" }
+            , { index = 2, imgSrc = "gordian_knot.jpg", arrow = "down" }
+            , { index = 3, imgSrc = "anpan.jpg", arrow = "right" }
             ]
+      , correntAnswerCount = 0
       }
-    , Cmd.none
+    , nextQuestion ()
     )
 
 
@@ -61,7 +64,7 @@ init _ =
 
 type Msg
     = KeyDown KeyType
-    | SetRandomValue Int
+    | SetQuestionIndex Int
 
 
 type KeyType
@@ -87,24 +90,44 @@ update msg model =
                             ( model, Cmd.none )
 
                 Playing ->
-                    case keyType of
-                        Up ->
-                            ( model, Random.generate SetRandomValue (Random.int 0 3) )
+                    if model.correntAnswerCount == 10 then
+                        ( { model | gameState = GameOver }, Cmd.none )
 
-                        Down ->
-                            ( model, Random.generate SetRandomValue (Random.int 0 3) )
+                    else
+                        case keyType of
+                            Up ->
+                                if correctAnswer "up" model then
+                                    ( { model | correntAnswerCount = model.correntAnswerCount + 1 }, nextQuestion () )
 
-                        Left ->
-                            ( model, Random.generate SetRandomValue (Random.int 0 3) )
+                                else
+                                    ( model, Cmd.none )
 
-                        Right ->
-                            ( model, Random.generate SetRandomValue (Random.int 0 3) )
+                            Down ->
+                                if correctAnswer "down" model then
+                                    ( { model | correntAnswerCount = model.correntAnswerCount + 1 }, nextQuestion () )
 
-                        Enter ->
-                            ( { model | gameState = GameOver }, Cmd.none )
+                                else
+                                    ( model, Cmd.none )
 
-                        _ ->
-                            ( model, Cmd.none )
+                            Left ->
+                                if correctAnswer "left" model then
+                                    ( { model | correntAnswerCount = model.correntAnswerCount + 1 }, nextQuestion () )
+
+                                else
+                                    ( model, Cmd.none )
+
+                            Right ->
+                                if correctAnswer "right" model then
+                                    ( { model | correntAnswerCount = model.correntAnswerCount + 1 }, nextQuestion () )
+
+                                else
+                                    ( model, Cmd.none )
+
+                            Enter ->
+                                ( { model | gameState = GameOver }, Cmd.none )
+
+                            _ ->
+                                ( model, Cmd.none )
 
                 GameOver ->
                     case keyType of
@@ -114,8 +137,35 @@ update msg model =
                         _ ->
                             ( model, Cmd.none )
 
-        SetRandomValue randomVal ->
-            ( { model | randomValue = randomVal }, Cmd.none )
+        SetQuestionIndex questionIndex ->
+            if questionIndex /= model.questionIndex then
+                ( { model | questionIndex = questionIndex }, Cmd.none )
+
+            else
+                ( model, nextQuestion () )
+
+
+correctAnswer : String -> Model -> Bool
+correctAnswer arrow model =
+    let
+        question =
+            getCurrentQuestion model
+    in
+    question.arrow == arrow
+
+
+getCurrentQuestion : Model -> Question
+getCurrentQuestion model =
+    model.questions
+        |> List.filter (\question -> question.index == model.questionIndex)
+        |> List.head
+        |> Maybe.andThen (\q -> Just q)
+        |> Maybe.withDefault { index = 0, imgSrc = "salad.jpg", arrow = "up" }
+
+
+nextQuestion : () -> Cmd Msg
+nextQuestion _ =
+    Random.generate SetQuestionIndex (Random.int 0 3)
 
 
 
@@ -191,7 +241,14 @@ showPlaying model =
                 , Attr.style "width" "50%"
                 , Attr.style "height" "20%"
                 ]
-                [ text "ここは操作ゾーンの想定" ]
+                [ img
+                    [ Attr.src "sousa.jpg"
+                    , Attr.style "width" "100%"
+                    , Attr.style "height" "100%"
+                    , Attr.style "object-fit" "fill"
+                    ]
+                    []
+                ]
             ]
         , div
             [ Attr.style "background-color" "green"
@@ -216,11 +273,11 @@ showGameOver model =
 
 getImgSrc : Model -> String
 getImgSrc model =
-    model.questions
-        |> List.filter (\question -> question.index == model.randomValue)
-        |> List.head
-        |> Maybe.andThen (\q -> Just q.imgSrc)
-        |> Maybe.withDefault "gordian_knot.jpg"
+    let
+        queston =
+            getCurrentQuestion model
+    in
+    queston.imgSrc
 
 
 
