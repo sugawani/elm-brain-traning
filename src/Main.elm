@@ -340,14 +340,26 @@ toKey key =
     case key of
         "ArrowUp" ->
             Up
+        
+        "w" ->
+            Up
 
         "ArrowDown" ->
+            Down
+        
+        "s" ->
             Down
 
         "ArrowLeft" ->
             Left
+        
+        "a" ->
+            Left
 
         "ArrowRight" ->
+            Right
+        
+        "d" ->
             Right
 
         "Enter" ->
